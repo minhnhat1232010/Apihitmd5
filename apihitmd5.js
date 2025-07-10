@@ -6,6 +6,9 @@ const PORT = process.env.PORT || 3000;
 let phienTruoc = null;
 let phienKeTiep = null;
 
+// ✅ Lưu 10 kết quả gần nhất (không chứa md5)
+let lichSuPhien = [];
+
 const WS_URL = "wss://mynygwais.hytsocesk.com/websocket";
 
 function connectWebSocket() {
@@ -66,6 +69,17 @@ function connectWebSocket() {
                             md5
                         };
 
+                        // ✅ Thêm vào lịch sử không chứa md5
+                        lichSuPhien.unshift({
+                            phien: sid,
+                            xuc_xac_1: d1,
+                            xuc_xac_2: d2,
+                            xuc_xac_3: d3,
+                            tong: total,
+                            ket_qua: result
+                        });
+                        if (lichSuPhien.length > 10) lichSuPhien.pop();
+
                         console.log(`🎲 Phiên ${sid}: ${d1}-${d2}-${d3} = ${total} ➜ ${result}`);
                         console.log(`🔐 MD5: ${md5}`);
                     }
@@ -75,7 +89,6 @@ function connectWebSocket() {
                             phien: sid,
                             md5
                         };
-
                         console.log(`⏭️ Phiên kế tiếp: ${sid} | MD5: ${md5}`);
                     }
                 }
@@ -97,12 +110,29 @@ function connectWebSocket() {
 
 connectWebSocket();
 
-// ✅ API Express trả JSON
+// ✅ API Express
+
 app.get("/", (req, res) => {
     res.json({
         phien_truoc: phienTruoc,
         phien_ke_tiep: phienKeTiep,
         thoi_gian: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+    });
+});
+
+// ✅ API: /latest – phiên mới nhất (có md5)
+app.get("/latest", (req, res) => {
+    res.json({
+        ...phienTruoc,
+        thoi_gian: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+    });
+});
+
+// ✅ API: /history – 10 kết quả gần nhất (không có md5)
+app.get("/history", (req, res) => {
+    res.json({
+        lich_su: lichSuPhien,
+        dem: lichSuPhien.length
     });
 });
 
@@ -114,4 +144,4 @@ setInterval(() => {
 // 🚀 Khởi động server
 app.listen(PORT, () => {
     console.log(`✅ API đang chạy tại http://localhost:${PORT}`);
-});
+});d
