@@ -1,0 +1,12 @@
+{
+  "name": "apihitmd5-api",
+  "version": "1.0.0",
+  "main": "apihitmd5.js",
+  "scripts": {
+    "start": "node apihitmd5.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.0.0"
+  }
+}
